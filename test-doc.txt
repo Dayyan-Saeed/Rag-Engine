@@ -1,0 +1,6 @@
+The RAG Engine is a full-stack Retrieval-Augmented Generation application.
+It combines a FastAPI backend with a Next.js frontend.
+Documents are uploaded, chunked, embedded with Voyage AI, and stored in Pinecone.
+Users can search their documents semantically and chat with an AI assistant that cites sources.
+The system uses Groq for the primary LLM with Gemini as a fallback.
+Multi-tenancy is enforced by filtering every vector query by user_id.
