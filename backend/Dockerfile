@@ -14,6 +14,7 @@ RUN pip install --no-cache-dir -e ".[dev]"
 COPY . .
 
 RUN useradd -m -u 1000 raguser
+RUN mkdir -p /app/uploads && chown -R raguser:raguser /app
 USER raguser
 
 EXPOSE 8000
