@@ -61,7 +61,9 @@ app = FastAPI(
 )
 
 # CORS
-if settings.ENVIRONMENT == "development":
+if settings.CORS_ORIGINS:
+    allow_origins = [o.strip() for o in settings.CORS_ORIGINS.split(",") if o.strip()]
+elif settings.ENVIRONMENT == "development":
     allow_origins = [
         "http://localhost:3000",
         "http://localhost:3001",

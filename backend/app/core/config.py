@@ -78,6 +78,9 @@ class Settings(BaseSettings):
     DEFAULT_TOP_K: int = 5
     MAX_TOP_K: int = 20
 
+    # CORS - comma-separated list; overrides environment defaults
+    CORS_ORIGINS: str = ""
+
     # Rate Limiting
     RATE_LIMIT_REQUESTS: int = 60
     RATE_LIMIT_WINDOW: int = 60  # seconds

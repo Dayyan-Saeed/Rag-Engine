@@ -3,7 +3,7 @@ import shutil
 import hmac
 from uuid import UUID
 from typing import List
-from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, status
+from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -40,17 +40,69 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
 @router.post("/auth/login", response_model=LoginResponse)
-async def login(body: LoginRequest):
+async def login(body: LoginRequest, request: Request):
+    ip = request.headers.get("x-forwarded-for", request.client.host if request.client else "unknown").split(",")[0].strip()
+    await _check_login_attempts(ip)
     username_ok = hmac.compare_digest(body.username.encode(), settings.AUTH_USERNAME.encode())
     password_ok = hmac.compare_digest(body.password.encode(), settings.AUTH_PASSWORD.encode())
     if not (username_ok and password_ok):
+        await _record_login_failure(ip)
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+    await _clear_login_failures(ip)
     token = create_simple_token(settings.AUTH_USERNAME)
     return LoginResponse(
         access_token=token,
         user_id=settings.AUTH_USERNAME,
         expires_in=SIMPLE_TOKEN_EXPIRES,
     )
+
+
+LOGIN_MAX_ATTEMPTS = 5
+LOGIN_LOCKOUT_SECONDS = 15 * 60
+
+
+async def _redis_client():
+    import redis.asyncio as redis
+
+    return redis.from_url(settings.REDIS_URL, socket_connect_timeout=2)
+
+
+async def _check_login_attempts(ip: str) -> None:
+    try:
+        r = await _redis_client()
+        count = int(await r.get(f"login_fail:{ip}") or 0)
+        await r.aclose()
+        if count >= LOGIN_MAX_ATTEMPTS:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Too many login attempts. Try again in 15 minutes.",
+            )
+    except HTTPException:
+        raise
+    except Exception:
+        pass  # fail open if Redis unavailable
+
+
+async def _record_login_failure(ip: str) -> None:
+    try:
+        r = await _redis_client()
+        key = f"login_fail:{ip}"
+        async with r.pipeline() as pipe:
+            await pipe.incr(key)
+            await pipe.expire(key, LOGIN_LOCKOUT_SECONDS)
+            await pipe.execute()
+        await r.aclose()
+    except Exception:
+        pass
+
+
+async def _clear_login_failures(ip: str) -> None:
+    try:
+        r = await _redis_client()
+        await r.delete(f"login_fail:{ip}")
+        await r.aclose()
+    except Exception:
+        pass
 
 
 @router.post("/documents/upload", response_model=DocumentResponse, status_code=status.HTTP_202_ACCEPTED)
