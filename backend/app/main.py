@@ -61,6 +61,7 @@ app = FastAPI(
 )
 
 # CORS
+allow_origin_regex = None
 if settings.CORS_ORIGINS:
     allow_origins = [o.strip() for o in settings.CORS_ORIGINS.split(",") if o.strip()]
 elif settings.ENVIRONMENT == "development":
@@ -71,11 +72,13 @@ elif settings.ENVIRONMENT == "development":
         "http://127.0.0.1:3001",
     ]
 else:
-    allow_origins = ["https://*.vercel.app"]
+    allow_origins = []
+    allow_origin_regex = r"^https://[a-zA-Z0-9-]+\.vercel\.app$"
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allow_origins,
+    allow_origin_regex=allow_origin_regex,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
