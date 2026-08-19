@@ -1,5 +1,4 @@
 /** @type {import('next').NextConfig} */
-const path = require('path');
 const nextConfig = {
   reactStrictMode: true,
   images: {
@@ -14,10 +13,6 @@ const nextConfig = {
     ];
   },
   webpack: (config, { isServer }) => {
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      '@': path.join(__dirname, 'app'),
-    };
     if (!isServer) {
       config.watchOptions = {
         poll: 1000,
