@@ -10,7 +10,7 @@ class Base(DeclarativeBase):
 
 
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    settings.DATABASE_URL_ASYNC,
     echo=settings.DEBUG,
     poolclass=NullPool if settings.ENVIRONMENT == "test" else None,
 )

@@ -24,6 +24,16 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str = Field(..., description="PostgreSQL async connection string")
 
+    @property
+    def DATABASE_URL_ASYNC(self) -> str:
+        url = self.DATABASE_URL
+        if url.startswith("postgresql+asyncpg://"):
+            return url
+        for scheme in ("postgresql://", "postgres://"):
+            if url.startswith(scheme):
+                return url.replace(scheme, "postgresql+asyncpg://", 1)
+        return url
+
     # Redis
     REDIS_URL: str = Field(default="redis://localhost:6379/0")
 
