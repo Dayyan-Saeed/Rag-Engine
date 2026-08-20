@@ -72,8 +72,8 @@ class Settings(BaseSettings):
 
     # Auth - Simple credentials (dev login)
     AUTH_USERNAME: str = "dev-user"
-    AUTH_PASSWORD: str = "ragengine"
-    AUTH_SECRET: str = "dev-secret-change-me"
+    AUTH_PASSWORD: str = ""
+    AUTH_SECRET: str = ""
 
     # File Upload
     MAX_FILE_SIZE: int = 50 * 1024 * 1024  # 50MB
