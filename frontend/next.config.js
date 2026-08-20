@@ -4,6 +4,20 @@ const nextConfig = {
   images: {
     domains: ['img.clerk.com', 'images.clerk.dev'],
   },
+  async redirects() {
+    return [
+      {
+        source: '/sign-in',
+        destination: '/login',
+        permanent: false,
+      },
+      {
+        source: '/sign-up',
+        destination: '/login',
+        permanent: false,
+      },
+    ];
+  },
   async rewrites() {
     return [
       {
