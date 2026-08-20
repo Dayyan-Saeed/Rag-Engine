@@ -98,10 +98,6 @@ export default function LoginPage() {
             )}
           </button>
         </form>
-
-        <p className="text-xs text-gray-400 dark:text-gray-500 text-center mt-6">
-          Demo login - credentials are defined in the project .env
-        </p>
       </div>
     </div>
   );
